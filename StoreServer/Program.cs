@@ -101,8 +101,6 @@ app.MapPost("/users", [Authorize] async (UserEntity user, StoreContext db) =>
 //gets all users
 app.MapGet("/users", [Authorize(Roles = "admin")] async (StoreContext db) =>
 {
-    // Получаем список всех пользователей
-    // Должно быть закрыто для не админа
     return await db.Users.ToListAsync();
 });
 //gets user
@@ -146,7 +144,6 @@ app.MapPut("/users", async (UserEntity updatedUser, StoreContext db) =>
 //gets products list
 app.MapGet("/products", async (StoreContext db) =>
 {
-    // Получаем список всех продуктов
     var list = await db.Products.ToListAsync();
     return Results.Json(list);
 });
