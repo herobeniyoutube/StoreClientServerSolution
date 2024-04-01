@@ -59,7 +59,7 @@ namespace StoreClient.View
         /// <param name="e"></param>
         private async void GetProductsListButtonClickAsync(object sender, RoutedEventArgs e)
         {
-            List<Product> productsList = await App.client.GetFromJsonAsync<List<Product>>("https://localhost:7277/products");
+            List<Product> productsList = await App.client.GetFromJsonAsync<List<Product>>("/products");
             StringBuilder stringBuilder = new StringBuilder();
             foreach (Product product in productsList)
             {

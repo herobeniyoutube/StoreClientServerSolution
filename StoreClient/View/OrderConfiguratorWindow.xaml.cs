@@ -30,7 +30,7 @@ namespace StoreClient.View
             UserLogin.Text = $"{UserLogin.Text}{App.Token.userLogin}";
             ProductsComboBox.ItemsSource = productsList;
             ProductsComboBox.SelectedIndex = 1;
-            this.Loaded += RefreshOrder;
+            this.Loaded += ShowOrder;
         }
 
         /// <summary>
@@ -38,31 +38,40 @@ namespace StoreClient.View
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void MakeOrderButtonClick(object sender, RoutedEventArgs e)
+        private async void MakeOrderButtonClickAsync(object sender, RoutedEventArgs e)
         {
             currentOrder.UserId = App.Token.id;
             currentOrder.OrderPrice = currentOrder.CountPrice(currentOrder.OrderPosition, productsList);
-            App.client.PostAsJsonAsync($"/users/{App.Token.id}/orders", currentOrder);
+            if (currentOrder.OrderPrice == 0)
+            {
+                MessageBox.Show("Заказ пустой!");
+                return;
+            }
+            currentOrder.OrderDate = DateTime.Now.ToShortDateString();
+            var response = await App.client.PostAsJsonAsync($"/users/{App.Token.id}/orders", currentOrder);
             currentOrder = null;
-            RefreshOrder(sender, e);
+            orderPositions = new List<OrderPosition>();
+            ShowOrder(sender, e);
         }
         /// <summary>
         /// Updates order details on the Window
         /// </summary>
-        private void RefreshOrder(object sender, RoutedEventArgs e)
+        /*private void RefreshOrder()
         {
-            PriceText.Text = "Стоимость заказа:";
-            if (currentOrder is null) PriceText.Text = $"Стоимость заказа: 0";
-            else PriceText.Text = $"Стоимость заказа:{currentOrder.CountPrice(currentOrder.OrderPosition, productsList)}";
+            
             ShowOrder();
-        }
+        }*/
         /// <summary>
         /// Show current order on the Window
         /// </summary>
-        private void ShowOrder()
+        private void ShowOrder(object sender, RoutedEventArgs e)
         {
             ScrollViewerPanel.Children.Clear();
-            if (currentOrder is null) { return; }
+            if (currentOrder is null) 
+            {
+                PriceText.Text = $"Стоимость заказа: 0";
+                return; 
+            }
             Product currentProduct;
             foreach (var position in currentOrder.OrderPosition)
             {
@@ -77,6 +86,9 @@ namespace StoreClient.View
                     Name = $"Id{currentProduct.Id}"
                 });
             }
+            PriceText.Text = "Стоимость заказа:";
+            if (currentOrder is null) PriceText.Text = $"Стоимость заказа: 0";
+            else PriceText.Text = $"Стоимость заказа:{currentOrder.CountPrice(currentOrder.OrderPosition, productsList)}";
         }
         
         /// <summary>
@@ -113,7 +125,7 @@ namespace StoreClient.View
                 if (currentOrder is null) currentOrder = new Order() { OrderPosition = orderPositions };
                 currentOrder.OrderPosition.Add(orderPosition);
             }
-            RefreshOrder(sender, e);
+            ShowOrder(sender, e);
         }
         /// <summary>
         /// Deletes position from current order
@@ -132,7 +144,7 @@ namespace StoreClient.View
                     currentOrder.OrderPosition.Remove(currentOrder.OrderPosition.FirstOrDefault(x => x.ProductId == Convert.ToInt32(checkBox.Name.Substring(2))));
                 }
             }
-            ShowOrder();
+            ShowOrder(sender, e);
         }
     }
 }

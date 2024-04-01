@@ -11,6 +11,7 @@ public class Order
     public User User { get; set; }
     public int? OrderPrice { get; set; }
     public List<OrderPosition> OrderPosition { get; set; }
+    public string OrderDate {  get; set; }
     public override string ToString() => $"Стоимость заказа: {OrderPrice} Id: {Id}";
     /// <summary>
     /// Count order's price

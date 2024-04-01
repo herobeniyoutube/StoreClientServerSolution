@@ -19,7 +19,7 @@
         <StackPanel x:Name="OrderInfo" Grid.Column="0" Grid.Row="0" VerticalAlignment="Top" Margin="20">
             <TextBlock x:Name="UserLogin" Text="Заказ пользователя:" />
             <TextBlock x:Name="PriceText" Text="Стоимость заказа:" />
-            <Button x:Name="OrderButton" Content="Оформить заказ" Click="MakeOrderButtonClick"/>
+            <Button x:Name="OrderButton" Content="Оформить заказ" Click="MakeOrderButtonClickAsync"/>
              
         </StackPanel>
         

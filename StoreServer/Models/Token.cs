@@ -1,4 +1,5 @@
 ﻿using StoreServer.Entities;
+using StoreServer.Models.EFCoreEntitiesCopies;
 
 namespace StoreServer.Models
 {
@@ -13,7 +14,7 @@ namespace StoreServer.Models
         /// <param name="encodedJwt"></param>
         /// <param name="user"></param>
         /// <param name="role"></param>
-        public Token(string encodedJwt, UserEntity user, string role)
+        public Token(string encodedJwt, User user, string role)
         {
             AccessToken = encodedJwt;
             UserLogin = user.UserLogin;

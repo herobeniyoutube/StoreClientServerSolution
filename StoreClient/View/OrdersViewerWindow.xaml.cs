@@ -1,8 +1,10 @@
-﻿using System;
+﻿using Azure;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Net.Http.Json;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -30,9 +32,10 @@ namespace StoreClient.View
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void GetOrdersAsync(object sender, RoutedEventArgs e)
+        private async void GetOrdersAsync(object sender, RoutedEventArgs e)
         {
-            if (Orders is null) Orders = App.client.GetFromJsonAsync<List<Order>>($"/users/{App.Token.id}/orders").Result;
+            if (Orders is null) Orders = await App.client.GetFromJsonAsync<List<Order>>($"/users/{App.Token.id}/orders");
+                  
             OrdersComboBox.ItemsSource = Orders;
         }
         /// <summary>
@@ -40,30 +43,32 @@ namespace StoreClient.View
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void GetOrdersPositions(object sender, RoutedEventArgs e)
+        private async Task<List<OrderPosition>> GetOrderPositionsAsync(object sender, RoutedEventArgs e)
         {
-            currentOrder.OrderPosition = App.client.GetFromJsonAsync<List<OrderPosition>>($"/users/{App.Token.id}/orders/{currentOrder.Id}/position").Result;
+            var response = await App.client.GetFromJsonAsync<List<OrderPosition>>($"/users/{App.Token.id}/orders/{currentOrder.Id}/position");
+
+            return response;
         }
         /// <summary>
         /// On change getting positions for chosen order. Shows it
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void ChooseOrderOnSelectionChanged(object sender, RoutedEventArgs e)
+        private async void ChooseOrderOnSelectionChanged(object sender, RoutedEventArgs e)
         {
             if (OrdersComboBox.SelectedValue is null) return;
             string comboBoxOrderName = OrdersComboBox.SelectedValue.ToString();   
             int i = comboBoxOrderName.IndexOf('d') + 3;
             int id = Convert.ToInt32(comboBoxOrderName.Substring(i));
             currentOrder = Orders.FirstOrDefault(x => x.Id == id);
-            GetOrdersPositions(sender, e);
+            currentOrder.OrderPosition = await GetOrderPositionsAsync(sender, e);
             ShowOrder();
         }
         /// <summary>
         /// Shows order 
         /// </summary>
         private void ShowOrder()
-        {
+         {
             ChosenOrderView.Children.Clear();
             if (currentOrder is null) { return; }
             Product currentProduct;
@@ -127,6 +132,12 @@ namespace StoreClient.View
             {
                var deletionResponse = await App.client.DeleteAsync($"/users/{App.Token.id}/orders/{currentOrder.Id}/position/{position.Id}");
             }
+            currentOrder.OrderPosition = new List<OrderPosition>();
+            if (currentOrder.OrderPrice == 0)
+            {
+                MessageBox.Show("Пустой заказ");
+                return;
+            }
             var updateResponse = await App.client.PutAsJsonAsync($"/users/{App.Token.id}/orders/{currentOrder.Id}", currentOrder);
             Orders = await App.client.GetFromJsonAsync<List<Order>>($"/users/{App.Token.id}/orders");
             GetOrdersAsync(sender, e);
@@ -154,7 +165,9 @@ namespace StoreClient.View
             var orderDeletionResponse = await App.client.DeleteFromJsonAsync<Order>($"/users/{App.Token.id}/orders/{currentOrder.Id}");
 
             Orders = await App.client.GetFromJsonAsync<List<Order>>($"/users/{App.Token.id}/orders");
+            currentOrder = null;
             GetOrdersAsync(sender, e);
+            ShowOrder();
         }
     }
 }

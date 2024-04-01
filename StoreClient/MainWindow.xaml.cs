@@ -33,6 +33,8 @@ namespace StoreClient
         public MainWindow()
         {
             InitializeComponent();
+
+
         }
         /// <summary>
         /// Button click event handler. Opens authorization dialog window

@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Metadata;
 using StoreServer.Entities;
+using StoreServer.Models.EFCoreEntitiesCopies;
 
 namespace StoreServer.Services
 {

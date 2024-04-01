@@ -1,6 +1,7 @@
 ﻿using Microsoft.IdentityModel.Tokens;
 using StoreServer.Entities;
 using StoreServer.Models;
+using StoreServer.Models.EFCoreEntitiesCopies;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
@@ -18,7 +19,7 @@ namespace StoreServer.Services
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
-        public Token GetToken(UserEntity user)
+        public Token GetToken(User user)
         {
 
             var role = userRole;

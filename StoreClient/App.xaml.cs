@@ -8,6 +8,13 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using System.Windows;
+using StoreClient;
+
+using System.Globalization;
+using Microsoft.Extensions.Configuration;
+using System.IO;
+using Microsoft.Extensions.Options;
+using System.Reflection.Metadata;
 
 namespace StoreClient
 {
@@ -16,7 +23,14 @@ namespace StoreClient
     /// </summary>
     public partial class App : Application
     {
-        private static Uri uri = new Uri("https://localhost:7277");
+
+
+        private static string applicationPath = AppDomain.CurrentDomain.BaseDirectory.Replace("\\bin\\Debug\\net7.0-windows\\", "");
+        private static IConfigurationRoot configurationRoot = new ConfigurationBuilder()
+            .SetBasePath(applicationPath)
+                .AddJsonFile("clientsettings.json", optional: false, reloadOnChange: true)
+                .Build();
+        private static Uri uri = new Uri($"{configurationRoot["ServerUrl"]}");
         public static Token Token {  get; set; }
         public static HttpClient client = new HttpClient() 
         {
