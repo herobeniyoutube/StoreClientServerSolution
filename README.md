@@ -24,6 +24,7 @@ CREATE TABLE Orders (
 	Id int IDENTITY(1,1) NOT NULL,
 	UserID int NULL,
 	OrderPrice int NOT NULL,
+ 	OrderDate varchar(max) not null,
 	CONSTRAINT PK__Orders__3214EC0707D027E5 PRIMARY KEY (Id),
 	CONSTRAINT FK__Orders__UserID__3B75D760 FOREIGN KEY (UserID) REFERENCES Users(Id)
 );
