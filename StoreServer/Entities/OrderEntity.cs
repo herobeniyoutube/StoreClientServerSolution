@@ -1,4 +1,6 @@
-﻿namespace StoreServer.Entities
+﻿using System.Text.Json.Serialization;
+
+namespace StoreServer.Entities
 {
     /// <summary>
     /// Ef core entity 
@@ -7,9 +9,10 @@
     {
         public int Id { get; set; }
         public int? UserId { get; set; }
-        public UserEntity User { get; set; }
-        public int? OrderPrice { get; set; }
-        public List<OrderPositionEntity> OrderPosition { get; set; }
-        public string? OrderDate { get; set; }
+        [JsonIgnore]
+        public UserEntity? User { get; set; }
+        public int? Price { get; set; }
+        public List<OrderPositionEntity>? Positions { get; set; }
+        public DateTime? Date { get; set; }
     }
 }

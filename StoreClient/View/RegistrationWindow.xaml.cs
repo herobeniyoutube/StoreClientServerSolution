@@ -48,7 +48,7 @@ namespace StoreClient.View
             SHA256 hash = SHA256.Create();
             string passwordEncrypted = Convert.ToHexString(hash.ComputeHash(data));
 
-            User user = new User() { UserLogin = login, UserName = name, Password = passwordEncrypted };
+            User user = new User() { Login = login, Name = name, Password = passwordEncrypted };
 
             var response = await App.client.PostAsJsonAsync("/register", user);
             string responseContent = await response.Content.ReadAsStringAsync();

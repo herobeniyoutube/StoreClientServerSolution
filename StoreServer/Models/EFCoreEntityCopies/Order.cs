@@ -1,13 +1,17 @@
-﻿namespace StoreServer.Models.EFCoreEntitiesCopies
+﻿using System.Text.Json.Serialization;
+
+namespace StoreServer.Models.EFCoreEntitiesCopies
 {
 
     public class Order
     {
         public int Id { get; set; }
         public int? UserId { get; set; }
+        [JsonIgnore]
         public User User { get; set; }
-        public int? OrderPrice { get; set; }
-        public List<OrderPosition> OrderPosition { get; set; }
-        public string OrderDate { get; set; }
+
+        public int? Price { get; set; }
+        public List<OrderPosition> Positions { get; set; }
+        public DateTime? Date { get; set; }
     }
 }

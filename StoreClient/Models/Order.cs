@@ -9,10 +9,10 @@ public class Order
     public int Id { get; set; }
     public int? UserId { get; set; }
     public User User { get; set; }
-    public int? OrderPrice { get; set; }
-    public List<OrderPosition> OrderPosition { get; set; }
-    public string OrderDate {  get; set; }
-    public override string ToString() => $"Стоимость заказа: {OrderPrice} Id: {Id}";
+    public int? Price { get; set; }
+    public List<OrderPosition> Positions { get; set; }
+    public DateTime Date {  get; set; }
+    public override string ToString() => $"Стоимость заказа: {Price} Id: {Id}";
     /// <summary>
     /// Count order's price
     /// </summary>

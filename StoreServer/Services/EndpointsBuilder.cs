@@ -2,6 +2,8 @@
 using Microsoft.EntityFrameworkCore;
 using StoreServer.Entities;
 using StoreServer.Models.EFCoreEntitiesCopies;
+using System.Text.Json;
+using System.Xml;
 
 namespace StoreServer.Services
 {
@@ -70,7 +72,8 @@ namespace StoreServer.Services
                 return Results.Json(user);
             });
             //changes user
-            app.MapPut("/users", async (User user, UsersService service) =>
+            //поменять на users/id:int
+            app.MapPut("/users", [Authorize] async (User user, UsersService service) =>
             {
                 var test = service.ChangeUserAsync(user);
                 if (test is null) return Results.BadRequest(StatusCodes.Status404NotFound);
@@ -78,7 +81,7 @@ namespace StoreServer.Services
                 return Results.Json(user);
             });
             //gets products list
-            app.MapGet("/products", async (ProductsService service) =>
+            app.MapGet("/products", [Authorize] async (ProductsService service) =>
             {
                 var products = await service.GetProductsAsync();
                 return products;
@@ -90,7 +93,7 @@ namespace StoreServer.Services
                 return Results.Json(product);
             });
             //creates new order
-            app.MapPost("/users/{id:int}/orders", async (int id, Order order, OrdersService service) =>
+            app.MapPost("/users/{id:int}/orders", [Authorize] async (int id, Order order, OrdersService service) =>
             {
                 var newOrder = await service.AddNewOrderAsync(id, order);
                 return Results.Json(newOrder);
@@ -102,25 +105,25 @@ namespace StoreServer.Services
                 return orders;
             });
             //deletes order
-            app.MapDelete("/users/{id:int}/orders/{orderId:int}", async (int id, int orderId, OrdersService service) =>
+            app.MapDelete("/users/{id:int}/orders/{orderId:int}", [Authorize] async (int id, int orderId, OrdersService service) =>
             {
                 var order = await service.DeleteOrderAsync(id, orderId);
                 return Results.Json(order);
             });
             //updates existing order
-            app.MapPut("/users/{id:int}/orders/{orderId:int}", async (int id, int orderId, Order order, OrdersService service) =>
+            app.MapPut("/users/{id:int}/orders/{orderId:int}", [Authorize] async (int id, int orderId, Order order, OrdersService service) =>
             {
                 var changedOrder = await service.ChangeOrderAsync(id, orderId, order);
                 return Results.Json(order);
             });
             //gets all order positions 
-            app.MapGet("/users/{id:int}/orders/{orderId:int}/position", async (int id, int orderId, OrdersService service) =>
+            app.MapGet("/users/{id:int}/orders/{orderId:int}/position", [Authorize] async (int id, int orderId, OrdersService service) =>
             {
-                var orderPositions =  await service.GetOrderPositionsAsync(orderId);
+                var orderPositions = await service.GetOrderPositionsAsync(orderId);
                 return Results.Json(orderPositions);
             });
             //deletes position from order
-            app.MapDelete("/users/{id:int}/orders/{orderId:int}/position/{positionId:int}", async (int id, int orderId, int positionId, OrdersService service) =>
+            app.MapDelete("/users/{id:int}/orders/{orderId:int}/position/{positionId:int}", [Authorize] async (int id, int orderId, int positionId, OrdersService service) =>
             {
                 var position = await service.DeleteOrderPositionsAsync(id, orderId, positionId);
                 return Results.Json(position);

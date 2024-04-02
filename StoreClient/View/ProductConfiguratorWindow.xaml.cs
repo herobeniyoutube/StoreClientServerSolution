@@ -39,13 +39,14 @@ namespace StoreClient.View
                 return;
             }
 
-            product.ProductName = NameBox.Text;
+            product.Name = NameBox.Text;
             product.Price = price;
             var response = await App.client.PostAsJsonAsync("/products", product);
             if (response.StatusCode == System.Net.HttpStatusCode.Forbidden)
             {
                 MessageBox.Show("Недостаточно прав");
             }
+            this.Close();
         } 
     }
 }

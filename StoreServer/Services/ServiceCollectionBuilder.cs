@@ -16,13 +16,22 @@ namespace StoreServer.Services
         /// <param name="builder"></param>
         public static void ConfigureServices(this WebApplicationBuilder builder)
         {
-            string applicationPath = AppDomain.CurrentDomain.BaseDirectory.Replace("\\bin\\Debug\\net7.0-windows\\", "");
+            string applicationPath = AppDomain.CurrentDomain.BaseDirectory; 
             IConfigurationRoot configurationRoot = new ConfigurationBuilder()
                     .SetBasePath(applicationPath)
                     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                     .Build();
-     
-            string connection = $"{configurationRoot["dbConnection"]}";
+            string connection = "";
+
+            try
+            {
+                connection = configurationRoot["dbConnection"];
+                if (connection == null )  throw new Exception();
+            }
+            catch (Exception ex) 
+            { 
+            Console.WriteLine(ex.ToString() + "Has no connection to db");
+            }
 
             builder.Services.AddEndpointsApiExplorer();
 
@@ -40,10 +49,10 @@ namespace StoreServer.Services
                     ValidateIssuerSigningKey = true
                 };
             });
-            builder.Services.AddTransient<JWTTokenConstructor>();
-            builder.Services.AddScoped<UsersService>();
-            builder.Services.AddTransient<ProductsService>();
-            builder.Services.AddTransient<OrdersService>();
+            builder.Services.AddScoped<JWTTokenConstructor>();
+            builder.Services.AddSingleton<UsersService>();
+            builder.Services.AddSingleton<ProductsService>();
+            builder.Services.AddSingleton<OrdersService>();
 
             builder.Services.AddAuthorization();
             builder.Services.AddControllers();

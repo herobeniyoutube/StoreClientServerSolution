@@ -32,7 +32,7 @@ namespace StoreServer.Services
         {
             ProductEntity productEntity = new ProductEntity()
             { 
-            ProductName = product.ProductName,
+            Name = product.Name,
             Price = product.Price
             };
             await db.Products.AddAsync(productEntity);

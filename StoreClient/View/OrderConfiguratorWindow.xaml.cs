@@ -41,26 +41,18 @@ namespace StoreClient.View
         private async void MakeOrderButtonClickAsync(object sender, RoutedEventArgs e)
         {
             currentOrder.UserId = App.Token.id;
-            currentOrder.OrderPrice = currentOrder.CountPrice(currentOrder.OrderPosition, productsList);
-            if (currentOrder.OrderPrice == 0)
+            currentOrder.Price = currentOrder.CountPrice(currentOrder.Positions, productsList);
+            if (currentOrder.Price == 0)
             {
                 MessageBox.Show("Заказ пустой!");
                 return;
             }
-            currentOrder.OrderDate = DateTime.Now.ToShortDateString();
+            currentOrder.Date = DateTime.Now;
             var response = await App.client.PostAsJsonAsync($"/users/{App.Token.id}/orders", currentOrder);
             currentOrder = null;
             orderPositions = new List<OrderPosition>();
             ShowOrder(sender, e);
         }
-        /// <summary>
-        /// Updates order details on the Window
-        /// </summary>
-        /*private void RefreshOrder()
-        {
-            
-            ShowOrder();
-        }*/
         /// <summary>
         /// Show current order on the Window
         /// </summary>
@@ -73,13 +65,13 @@ namespace StoreClient.View
                 return; 
             }
             Product currentProduct;
-            foreach (var position in currentOrder.OrderPosition)
+            foreach (var position in currentOrder.Positions)
             {
                 currentProduct = productsList.FirstOrDefault(x => x.Id == position.ProductId);
                 if (currentProduct is null) { return; }
                 ScrollViewerPanel.Children.Add(new CheckBox
                 {
-                    Content = $"Название: {currentProduct.ProductName} " +
+                    Content = $"Название: {currentProduct.Name} " +
                     $"Количество: {position.ProductQuantity} " +
                     $"Цена: {position.ProductQuantity * currentProduct.Price}",
                     IsChecked = false,
@@ -88,9 +80,8 @@ namespace StoreClient.View
             }
             PriceText.Text = "Стоимость заказа:";
             if (currentOrder is null) PriceText.Text = $"Стоимость заказа: 0";
-            else PriceText.Text = $"Стоимость заказа:{currentOrder.CountPrice(currentOrder.OrderPosition, productsList)}";
+            else PriceText.Text = $"Стоимость заказа:{currentOrder.CountPrice(currentOrder.Positions, productsList)}";
         }
-        
         /// <summary>
         /// Adds new position to the current order
         /// </summary>
@@ -107,7 +98,7 @@ namespace StoreClient.View
             }
 
             string productName = ProductsComboBox.SelectedValue.ToString();
-            var product = productsList.FirstOrDefault(x => x.ProductName == productName);  
+            var product = productsList.FirstOrDefault(x => x.Name == productName);  
 
             orderPosition = orderPositions.FirstOrDefault(x => x.ProductId == product.Id);
 
@@ -120,10 +111,12 @@ namespace StoreClient.View
                 orderPosition = new OrderPosition()
                 {
                     ProductId = product.Id,
-                    ProductQuantity = quantity
+                    ProductQuantity = quantity,
+                    Product = product
                 };
-                if (currentOrder is null) currentOrder = new Order() { OrderPosition = orderPositions };
-                currentOrder.OrderPosition.Add(orderPosition);
+
+                if (currentOrder is null) currentOrder = new Order() { Positions = orderPositions };
+                currentOrder.Positions.Add(orderPosition);
             }
             ShowOrder(sender, e);
         }
@@ -141,7 +134,7 @@ namespace StoreClient.View
                 checkBox = item as CheckBox;
                 if ((bool)checkBox.IsChecked)
                 {
-                    currentOrder.OrderPosition.Remove(currentOrder.OrderPosition.FirstOrDefault(x => x.ProductId == Convert.ToInt32(checkBox.Name.Substring(2))));
+                    currentOrder.Positions.Remove(currentOrder.Positions.FirstOrDefault(x => x.ProductId == Convert.ToInt32(checkBox.Name.Substring(2))));
                 }
             }
             ShowOrder(sender, e);

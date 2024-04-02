@@ -25,11 +25,12 @@ namespace StoreClient
     {
 
 
-        private static string applicationPath = AppDomain.CurrentDomain.BaseDirectory.Replace("\\bin\\Debug\\net7.0-windows\\", "");
+        private static string applicationPath = AppDomain.CurrentDomain.BaseDirectory;
         private static IConfigurationRoot configurationRoot = new ConfigurationBuilder()
             .SetBasePath(applicationPath)
                 .AddJsonFile("clientsettings.json", optional: false, reloadOnChange: true)
                 .Build();
+
         private static Uri uri = new Uri($"{configurationRoot["ServerUrl"]}");
         public static Token Token {  get; set; }
         public static HttpClient client = new HttpClient() 

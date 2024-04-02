@@ -17,8 +17,8 @@ namespace StoreServer.Models
         public Token(string encodedJwt, User user, string role)
         {
             AccessToken = encodedJwt;
-            UserLogin = user.UserLogin;
-            UserName = user.UserName;
+            UserLogin = user.Login;
+            UserName = user.Name;
             Text = "success";
             Id = user.Id;
             Role = role;

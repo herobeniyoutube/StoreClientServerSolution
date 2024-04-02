@@ -26,20 +26,20 @@ namespace StoreServer.Services
         /// <returns>Token instance</returns>
         public async Task<Token> RegisterAsync(User user)
         {
-            bool userExists = db.Users.Any(x => x.UserLogin == user.UserLogin);
+            bool userExists = db.Users.Any(x => x.Login == user.Login);
             if (userExists) return null;
 
             UserEntity newUser = new UserEntity()
             {
-                UserName = user.UserName,
-                UserLogin = user.UserLogin,
+                Name = user.Name,
+                Login = user.Login,
                 Password = user.Password
             };
 
             await db.Users.AddAsync(newUser);
             await db.SaveChangesAsync();
 
-            UserEntity addedUser = await db.Users.FirstOrDefaultAsync(u => u.UserLogin == user.UserLogin);
+            UserEntity addedUser = await db.Users.FirstOrDefaultAsync(u => u.Login == user.Login);
 
             user.Id = addedUser.Id;
 
@@ -52,12 +52,12 @@ namespace StoreServer.Services
         /// <returns>Token instance</returns>
         public async Task<Token> LoginAsync(User user)
         {
-            string? login = user.UserLogin;
+            string? login = user.Login;
             string? password = user.Password;
 
-            UserEntity userEntity = await db.Users.FirstOrDefaultAsync(u => u.UserLogin == login);
+            UserEntity userEntity = await db.Users.FirstOrDefaultAsync(u => u.Login == login);
             if (userEntity is null) return null;
-            if (password != db.Users.FirstOrDefault(x => x.UserLogin == login).Password) return null;
+            if (password != db.Users.FirstOrDefault(x => x.Login == login).Password) return null;
 
             user.Id = userEntity.Id;
 
@@ -72,8 +72,8 @@ namespace StoreServer.Services
         {
             UserEntity newUser = new UserEntity()
             {
-                UserName = user.UserName,
-                UserLogin = user.UserLogin,
+                Name = user.Name,
+                Login = user.Login,
                 Password = user.Password
             };
             await db.Users.AddAsync(newUser);
@@ -93,8 +93,8 @@ namespace StoreServer.Services
 
             User foundUser = new User()
             {
-                UserName = user.UserName,
-                UserLogin = user.UserLogin,
+                Name = user.Name,
+                Login = user.Login,
                 Password = user.Password
             };
 
@@ -117,15 +117,15 @@ namespace StoreServer.Services
         {
             UserEntity user = await db.Users.FirstAsync(x => x.Id == userId);
             if (user == null) return null;
-            if (user.UserLogin == "admin") return null;
+            if (user.Login == "admin") return null;
 
             db.Users.Remove(user);
             await db.SaveChangesAsync();
 
             User deletedUser = new User()
             {
-                UserName = user.UserName,
-                UserLogin = user.UserLogin,
+                Name = user.Name,
+                Login = user.Login,
                 Password = user.Password
             };
             return deletedUser;
@@ -137,11 +137,11 @@ namespace StoreServer.Services
         /// <returns></returns>
         public async Task<User> ChangeUserAsync(User user)
         {
-            var updatedUser = await db.Users.FirstOrDefaultAsync(x => x.UserLogin == user.UserLogin);
-            if (user is null) return null;
+            var updatedUser = await db.Users.FirstOrDefaultAsync(x => x.Login == user.Login);
+            if (updatedUser is null) return null;
 
-            updatedUser.UserName = user.UserName;
-            updatedUser.UserLogin = user.UserLogin;
+            updatedUser.Name = user.Name;
+            updatedUser.Login = user.Login;
             await db.SaveChangesAsync();
 
             return user;

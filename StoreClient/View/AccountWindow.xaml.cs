@@ -63,7 +63,7 @@ namespace StoreClient.View
             StringBuilder stringBuilder = new StringBuilder();
             foreach (Product product in productsList)
             {
-                stringBuilder.AppendLine($"{product.ProductName}");
+                stringBuilder.AppendLine($"{product.Name}");
             }
             MessageBox.Show(stringBuilder.ToString());
         }
@@ -104,16 +104,8 @@ namespace StoreClient.View
         /// <param name="e"></param>
         private async void DownloadOrdersButtonClickAsync(object sender, RoutedEventArgs e)
         {
-            var orders = await App.client.GetFromJsonAsync<List<Order>>($"/users/{App.Token.id}/orders");
-            foreach (var order in orders)
-            {
-                var orderPositions = await App.client.GetFromJsonAsync<List<OrderPosition>>($"/users/{App.Token.id}/orders/{order.Id}/position");
-                var orderPositionsList = from o in orderPositions
-                                         where o.OrderId == order.Id
-                                         select o;
-                order.OrderPosition = orderPositionsList.ToList();
-            }
-            string ordersJson =  JsonSerializer.Serialize(orders);
+            var orders = await App.client.GetAsync($"/users/{App.Token.id}/orders").Result.Content.ReadAsStringAsync();
+            string ordersJson = JsonSerializer.Serialize(orders);
             await File.AppendAllTextAsync($"Orders_{App.Token.userLogin}.json", ordersJson);
         }
     }

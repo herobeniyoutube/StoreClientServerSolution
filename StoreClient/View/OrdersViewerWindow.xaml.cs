@@ -14,11 +14,10 @@ namespace StoreClient.View
     /// Order viewer window. Has instruments for managing existing orders. Editing,deletion
     /// </summary>
     public partial class OrdersViewerWindow : Window
-    {
-        List<Product>? productsList = App.client.GetFromJsonAsync<List<Product>>("/products").Result;
-        List<Order>? Orders;
+    {  
+        List<Order>? orders;
         Order currentOrder;
-        ImmutableList<OrderPosition> deletedPositionsImmutableList = ImmutableList.Create<OrderPosition>();
+
         public OrdersViewerWindow()
         {
             InitializeComponent();
@@ -34,9 +33,9 @@ namespace StoreClient.View
         /// <param name="e"></param>
         private async void GetOrdersAsync(object sender, RoutedEventArgs e)
         {
-            if (Orders is null) Orders = await App.client.GetFromJsonAsync<List<Order>>($"/users/{App.Token.id}/orders");
-                  
-            OrdersComboBox.ItemsSource = Orders;
+            if (orders is null) orders = await App.client.GetFromJsonAsync<List<Order>>($"/users/{App.Token.id}/orders");
+
+            OrdersComboBox.ItemsSource = orders;
         }
         /// <summary>
         /// Gets all positions for current Order
@@ -57,33 +56,33 @@ namespace StoreClient.View
         private async void ChooseOrderOnSelectionChanged(object sender, RoutedEventArgs e)
         {
             if (OrdersComboBox.SelectedValue is null) return;
-            string comboBoxOrderName = OrdersComboBox.SelectedValue.ToString();   
+
+            //Gets order id from combobox value name
+            string comboBoxOrderName = OrdersComboBox.SelectedValue.ToString();
             int i = comboBoxOrderName.IndexOf('d') + 3;
             int id = Convert.ToInt32(comboBoxOrderName.Substring(i));
-            currentOrder = Orders.FirstOrDefault(x => x.Id == id);
-            currentOrder.OrderPosition = await GetOrderPositionsAsync(sender, e);
+
+            currentOrder = orders.FirstOrDefault(x => x.Id == id);
+            
             ShowOrder();
         }
         /// <summary>
         /// Shows order 
         /// </summary>
         private void ShowOrder()
-         {
+        {
             ChosenOrderView.Children.Clear();
             if (currentOrder is null) { return; }
-            Product currentProduct;
-            foreach (var position in currentOrder.OrderPosition)
+          
+            foreach (var position in currentOrder.Positions)
             {
-                currentProduct = productsList.FirstOrDefault(x => x.Id == position.ProductId);
-                if (currentProduct is null) { return; }
-
                 ChosenOrderView.Children.Add(new CheckBox
                 {
-                    Content = $"Название: {currentProduct.ProductName} " +
+                    Content = $"Название: {position.Product.Name} " +
                     $"Количество: {position.ProductQuantity} " +
-                    $"Цена: {position.ProductQuantity * currentProduct.Price}",
+                    $"Цена: {position.ProductQuantity * position.Product.Price}",
                     IsChecked = false,
-                    Name = $"Id{currentProduct.Id}"
+                    Name = $"Id{position.Product.Id}"
                 });
             }
         }
@@ -95,27 +94,27 @@ namespace StoreClient.View
         private void RemovePositionButtonClick(object sender, RoutedEventArgs e)
         {
             var result = MessageBox.Show("Удалить позиции?", "", MessageBoxButton.YesNo);
-
             if (result == MessageBoxResult.No) return;
-
-            if (currentOrder.OrderPosition.Count == 0) return;
+            if (currentOrder.Positions.Count == 0) return;
 
             CheckBox checkBox = new CheckBox();
             OrderPosition positionForDeletion;
             List<OrderPosition> tempDeletedPositionsList = new List<OrderPosition>();
+
             foreach (var item in ChosenOrderView.Children)
             {
                 checkBox = item as CheckBox;
                 if ((bool)checkBox.IsChecked)
                 {
-                    positionForDeletion = currentOrder.OrderPosition.FirstOrDefault(x => x.ProductId == Convert.ToInt32(checkBox.Name.Substring(2)));
-                    currentOrder.OrderPosition.Remove(positionForDeletion);
-
-                    tempDeletedPositionsList.Add(positionForDeletion);
+                    positionForDeletion = currentOrder.Positions.FirstOrDefault(x => x.ProductId == Convert.ToInt32(checkBox.Name.Substring(2)));
+                    currentOrder.Positions.Remove(positionForDeletion);
                 }
             }
-            deletedPositionsImmutableList = tempDeletedPositionsList.ToImmutableList();
-            currentOrder.OrderPrice = currentOrder.OrderPosition.Sum((x) => x.ProductQuantity * productsList.First(p => p.Id == x.ProductId).Price);
+
+            currentOrder.Price = currentOrder.Positions.Sum((x) => x.ProductQuantity * x.Product.Price);
+
+            OrdersComboBox.ItemsSource = orders;
+
             ShowOrder();
         }
         /// <summary>
@@ -125,21 +124,15 @@ namespace StoreClient.View
         /// <param name="e"></param>
         private async void UpdateOrderButtonClickAsync(object sender, RoutedEventArgs e)
         {
-            if (currentOrder is null) return;
-            if (deletedPositionsImmutableList is null || deletedPositionsImmutableList.Count == 0) return;
-         
-            foreach (var position in deletedPositionsImmutableList) 
-            {
-               var deletionResponse = await App.client.DeleteAsync($"/users/{App.Token.id}/orders/{currentOrder.Id}/position/{position.Id}");
-            }
-            currentOrder.OrderPosition = new List<OrderPosition>();
-            if (currentOrder.OrderPrice == 0)
+            if (currentOrder is null) return; 
+            if (currentOrder.Price == 0)
             {
                 MessageBox.Show("Пустой заказ");
                 return;
             }
+
             var updateResponse = await App.client.PutAsJsonAsync($"/users/{App.Token.id}/orders/{currentOrder.Id}", currentOrder);
-            Orders = await App.client.GetFromJsonAsync<List<Order>>($"/users/{App.Token.id}/orders");
+            orders = await App.client.GetFromJsonAsync<List<Order>>($"/users/{App.Token.id}/orders");
             GetOrdersAsync(sender, e);
         }
         /// <summary>
@@ -155,16 +148,9 @@ namespace StoreClient.View
 
             if (result == MessageBoxResult.No) return;
 
-            deletedPositionsImmutableList = currentOrder.OrderPosition.ToImmutableList();
-
-            foreach (var position in deletedPositionsImmutableList)
-            {
-                var deletionResponse = await App.client.DeleteAsync($"/users/{App.Token.id}/orders/{currentOrder.Id}/position/{position.Id}");
-            }
-
             var orderDeletionResponse = await App.client.DeleteFromJsonAsync<Order>($"/users/{App.Token.id}/orders/{currentOrder.Id}");
 
-            Orders = await App.client.GetFromJsonAsync<List<Order>>($"/users/{App.Token.id}/orders");
+            orders = await App.client.GetFromJsonAsync<List<Order>>($"/users/{App.Token.id}/orders");
             currentOrder = null;
             GetOrdersAsync(sender, e);
             ShowOrder();

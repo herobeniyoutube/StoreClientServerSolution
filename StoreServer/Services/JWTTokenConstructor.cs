@@ -23,11 +23,11 @@ namespace StoreServer.Services
         {
 
             var role = userRole;
-            if (user.UserLogin == "admin") role = adminRole;
+            if (user.Login == "admin") role = adminRole;
 
             var claims = new List<Claim>
     {
-        new Claim(ClaimTypes.Name, user.UserLogin),
+        new Claim(ClaimTypes.Name, user.Login),
         new Claim(ClaimsIdentity.DefaultRoleClaimType, role.Name)
     };
 
@@ -35,7 +35,7 @@ namespace StoreServer.Services
                    issuer: AuthentificationOptions.ISSUER,
                    audience: AuthentificationOptions.AUDIENCE,
                    claims: claims,
-                   expires: DateTime.UtcNow.Add(TimeSpan.FromMinutes(2)),
+                   expires: DateTime.UtcNow.Add(TimeSpan.FromMinutes(20)),
                    signingCredentials: new SigningCredentials(AuthentificationOptions.GetSymmetricSecurityKey(), SecurityAlgorithms.HmacSha256));
             var encodedJwt = new JwtSecurityTokenHandler().WriteToken(jwt);
 
